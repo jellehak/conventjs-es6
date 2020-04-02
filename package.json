@@ -1,0 +1,16 @@
+{
+  "name": "convnetjs",
+  "version": "1.0.0",
+  "description": "ConvNetJS is a Javascript implementation of Neural networks, together with nice browser-based demos. It currently supports:",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "start": "npx browser-sync .",
+    "dev": "npx webpack --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
