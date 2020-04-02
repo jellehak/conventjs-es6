@@ -13,14 +13,14 @@ For much more information, see the main page at [convnetjs.com](http://convnetjs
 **Note**: I am not actively maintaining ConvNetJS anymore because I simply don't have time. I think the npm repo might not work at this point.
 
 ## Online Demos
-- [Convolutional Neural Network on MNIST digits](http://cs.stanford.edu/~karpathy/convnetjs/demo/mnist.html)
-- [Convolutional Neural Network on CIFAR-10](http://cs.stanford.edu/~karpathy/convnetjs/demo/cifar10.html)
-- [Toy 2D data](http://cs.stanford.edu/~karpathy/convnetjs/demo/classify2d.html)
-- [Toy 1D regression](http://cs.stanford.edu/~karpathy/convnetjs/demo/regression.html)
-- [Training an Autoencoder on MNIST digits](http://cs.stanford.edu/~karpathy/convnetjs/demo/autoencoder.html)
-- [Deep Q Learning Reinforcement Learning demo](http://cs.stanford.edu/people/karpathy/convnetjs/demo/rldemo.html)
-- [Image Regression ("Painting")](http://cs.stanford.edu/~karpathy/convnetjs/demo/image_regression.html)
-- [Comparison of SGD/Adagrad/Adadelta on MNIST](http://cs.stanford.edu/people/karpathy/convnetjs/demo/trainers.html)
+- [Convolutional Neural Network on MNIST digits](/demo/mnist.html ":ignore")
+- [Convolutional Neural Network on CIFAR-10](/demo/cifar10.html ":ignore")
+- [Toy 2D data](/demo/classify2d.html ":ignore")
+- [Toy 1D regression](/demo/regression.html ":ignore")
+- [Training an Autoencoder on MNIST digits](/demo/autoencoder.html ":ignore")
+- [Deep Q Learning Reinforcement Learning demo](http://cs.stanford.edu/people/karpathy/convnetjs/demo/rldemo.html ":ignore")
+- [Image Regression ("Painting")](/demo/image_regression.html ":ignore")
+- [Comparison of SGD/Adagrad/Adadelta on MNIST](http://cs.stanford.edu/people/karpathy/convnetjs/demo/trainers.html ":ignore")
 
 ## Example Code
 
@@ -86,7 +86,7 @@ net = new convnetjs.Net();
 net.makeLayers(layer_defs);
 
 // helpful utility for converting images into Vols is included
-var x = convnetjs.img_to_vol(document.getElementById('some_image'))
+var x = convnetjs.img_to_vol(document.getElementById('#some_image'))
 var output_probabilities_vol = net.forward(x)
 ```
 
