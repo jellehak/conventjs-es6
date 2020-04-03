@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
-/* eslint-disable no-undef */
+import snackbar from './snackbar.js'
+
 var sample_training_instance = function () {
   // find an unloaded batch
   var bi = Math.floor(Math.random() * loaded_train_batches.length)
@@ -101,30 +102,34 @@ var img_data = new Array(num_batches)
 var loaded = new Array(num_batches)
 var loaded_train_batches = []
 
-console.log(loaded)
 var start_fun = function () {
   if (loaded[0] && loaded[test_batch]) {
     console.log('starting!')
     setInterval(load_and_step, 0) // lets go!
-  } else { setTimeout(start_fun, 200) } // keep checking
+  } else {
+    // keep checking
+    console.log('keep checking')
+    setTimeout(start_fun, 500)
+  }
 }
 
-var load_data_batch = function (batch_num) {
+const load_data_batch = function (batchNum, path = 'input') {
+  console.log(`load_data_batch: ${batchNum}`)
   // Load the dataset with JS in background
-  data_img_elts[batch_num] = new Image()
-  var data_img_elt = data_img_elts[batch_num]
+  data_img_elts[batchNum] = new Image()
+  var data_img_elt = data_img_elts[batchNum]
   data_img_elt.onload = function () {
     var data_canvas = document.createElement('canvas')
     data_canvas.width = data_img_elt.width
     data_canvas.height = data_img_elt.height
     var data_ctx = data_canvas.getContext('2d')
     data_ctx.drawImage(data_img_elt, 0, 0) // copy it over... bit wasteful :(
-    img_data[batch_num] = data_ctx.getImageData(0, 0, data_canvas.width, data_canvas.height)
-    loaded[batch_num] = true
-    if (batch_num < test_batch) { loaded_train_batches.push(batch_num) }
-    console.log('finished loading data batch ' + batch_num)
+    img_data[batchNum] = data_ctx.getImageData(0, 0, data_canvas.width, data_canvas.height)
+    loaded[batchNum] = true
+    if (batchNum < test_batch) { loaded_train_batches.push(batchNum) }
+    console.log('finished loading data batch ' + batchNum)
   }
-  data_img_elt.src = dataset_name + '/' + dataset_name + '_batch_' + batch_num + '.png'
+  data_img_elt.src = `${path}/mnist_batch_${batchNum}.png`
 }
 
 var maxmin = cnnutil.maxmin
@@ -237,32 +242,6 @@ var visualize_activations = function (net, elt) {
     if (i === 0) {
       draw_activations_COLOR(activations_div, L.out_act, scale)
       draw_activations_COLOR(activations_div, L.out_act, scale, true)
-
-      /*
-      // visualize positive and negative components of the gradient separately
-      var dd = L.out_act.clone();
-      var ni = L.out_act.w.length;
-      for(var q=0;q<ni;q++) { var dwq = L.out_act.dw[q]; dd.w[q] = dwq > 0 ? dwq : 0.0; }
-      draw_activations_COLOR(activations_div, dd, scale);
-      for(var q=0;q<ni;q++) { var dwq = L.out_act.dw[q]; dd.w[q] = dwq < 0 ? -dwq : 0.0; }
-      draw_activations_COLOR(activations_div, dd, scale);
-      */
-
-      /*
-      // visualize what the network would like the image to look like more
-      var dd = L.out_act.clone();
-      var ni = L.out_act.w.length;
-      for(var q=0;q<ni;q++) { var dwq = L.out_act.dw[q]; dd.w[q] -= 20*dwq; }
-      draw_activations_COLOR(activations_div, dd, scale);
-      */
-
-      /*
-      // visualize gradient magnitude
-      var dd = L.out_act.clone();
-      var ni = L.out_act.w.length;
-      for(var q=0;q<ni;q++) { var dwq = L.out_act.dw[q]; dd.w[q] = dwq*dwq; }
-      draw_activations_COLOR(activations_div, dd, scale);
-      */
     } else {
       draw_activations(activations_div, L.out_act, scale)
     }
@@ -387,7 +366,7 @@ var test_predict = function () {
   var num_correct = 0
 
   // grab a random test image
-  for (num = 0; num < 4; num++) {
+  for (let num = 0; num < 4; num++) {
     var sample = sample_test_instance()
     var y = sample.label // ground truth label
 
@@ -420,7 +399,7 @@ var test_predict = function () {
     var t = ''
     for (var k = 0; k < 3; k++) {
       var col = preds[k].k === y ? 'rgb(85,187,85)' : 'rgb(187,85,85)'
-      t += '<div class=\"pp\" style=\"width:' + Math.floor(preds[k].p / n * 100) + 'px; background-color:' + col + ';\">' + classes_txt[preds[k].k] + '</div>'
+      t += '<div class="pp" style="width:' + Math.floor(preds[k].p / n * 100) + 'px; background-color:' + col + ';">' + classes_txt[preds[k].k] + '</div>'
     }
     probsdiv.innerHTML = t
     probsdiv.className = 'probsdiv'
@@ -577,11 +556,7 @@ var update_net_param_display = function () {
   document.getElementById('batch_size_input').value = trainer.batch_size
   document.getElementById('decay_input').value = trainer.l2_decay
 }
-var toggle_pause = function () {
-  paused = !paused
-  var btn = document.getElementById('buttontp')
-  if (paused) { btn.value = 'resume' } else { btn.value = 'pause' }
-}
+
 var dump_json = function () {
   document.getElementById('dumpjson').value = JSON.stringify(this.net.toJSON())
 }
@@ -610,13 +585,6 @@ var load_from_json = function () {
   reset_all()
 }
 
-var loadJsonFromUrl = async function (url = '') {
-  var json = await fetch(url).then(elem => elem.json())
-  net = new convnetjs.Net()
-  net.fromJSON(json)
-  reset_all()
-}
-
 var load_pretrained = function () {
   $.getJSON(dataset_name + '_snapshot.json', function (json) {
     net = new convnetjs.Net()
@@ -634,6 +602,12 @@ var change_net = function () {
   reset_all()
 }
 
+// Without options
+Vue.use(snackbar)
+
+// Globals
+let trainer = {}
+
 // int main
 const vue = new Vue({
   el: '#app',
@@ -641,41 +615,105 @@ const vue = new Vue({
 
   data () {
     return {
-      panel: [1, 2, 3, 4]
+      panel: [1, 2, 3, 4],
+      form: {
+        lr: 0,
+        learning_rate: 0,
+        momentum: 0,
+        batch_size: 20,
+        decay: 0.001
+      },
+      paused,
+
+      // Processed samples
+      testSet: []
+    }
+  },
+
+  methods: {
+    submit () {
+      // Set parameters to trainer
+      Object.assign(trainer, this.form)
+    },
+
+    toggle_pause () {
+      this.paused = !this.paused
+      paused = !paused
+      this.$snackbar('Toggle pause')
+      // var btn = document.getElementById('buttontp')
+      // if (paused) { btn.value = 'resume' } else { btn.value = 'pause' }
+    },
+
+    async loadJsonFromUrl (url = '') {
+      var json = await fetch(url).then(elem => elem.json())
+      net = new convnetjs.Net()
+      net.fromJSON(json)
+      reset_all()
+    }
+
+  },
+
+  computed: {
+    _testAcc () {
+      return testAccWindow.get_average()
     }
   },
 
   mounted () {
-    $(window).load(function () {
-      var t = `layer_defs = [];\n\
-  layer_defs.push({type:'input', out_sx:24, out_sy:24, out_depth:1});\n\
-  layer_defs.push({type:'conv', sx:5, filters:8, stride:1, pad:2, activation:'relu'});\n\
-  layer_defs.push({type:'pool', sx:2, stride:2});\n\
-  layer_defs.push({type:'conv', sx:5, filters:16, stride:1, pad:2, activation:'relu'});\n\
-  layer_defs.push({type:'pool', sx:3, stride:3});\n\
-  layer_defs.push({type:'softmax', num_classes:10});\n\
-  \n\
-  net = new convnetjs.Net();\n\
-  net.makeLayers(layer_defs);\n\
-  \n\
-  trainer = new convnetjs.SGDTrainer(net, {method:'adadelta', batch_size:20, l2_decay:0.001});\n\
- `
+    // Setup
+    // const layer_defs = [
+    //   { type: 'input', out_sx: 24, out_sy: 24, out_depth: 1 },
+    //   { type: 'conv', sx: 5, filters: 8, stride: 1, pad: 2, activation: 'relu' },
+    //   { type: 'pool', sx: 2, stride: 2 },
+    //   { type: 'conv', sx: 5, filters: 16, stride: 1, pad: 2, activation: 'relu' },
+    //   { type: 'pool', sx: 3, stride: 3 },
+    //   { type: 'softmax', num_classes: 10 }
+    // ]
 
-      // $('#newnet').val(t)
-      eval($('#newnet').val())
-      console.log(trainer, $('#newnet').val())
+    // net = new convnetjs.Net()
+    // net.makeLayers(layer_defs)
 
-      update_net_param_display()
+    // trainer = new convnetjs.SGDTrainer(net, { method: 'adadelta', batch_size: 20, l2_decay: 0.001 })
 
+    var t = `layer_defs = [];\n\
+    layer_defs.push({type:'input', out_sx:24, out_sy:24, out_depth:1});\n\
+    layer_defs.push({type:'conv', sx:5, filters:8, stride:1, pad:2, activation:'relu'});\n\
+    layer_defs.push({type:'pool', sx:2, stride:2});\n\
+    layer_defs.push({type:'conv', sx:5, filters:16, stride:1, pad:2, activation:'relu'});\n\
+    layer_defs.push({type:'pool', sx:3, stride:3});\n\
+    layer_defs.push({type:'softmax', num_classes:10});\n\
+    \n\
+    net = new convnetjs.Net();\n\
+    net.makeLayers(layer_defs);\n\
+    \n\
+    trainer = new convnetjs.SGDTrainer(net, {method:'adadelta', batch_size:20, l2_decay:0.001});\n\
+   `
+
+    // $('#newnet').val(t)
+    eval($('#newnet').val())
+    // console.log(trainer, $('#newnet').val())
+
+    update_net_param_display()
+    // console.log(trainer)
+    // this.form = {
+    //   ...trainer
+    // }
+    Object.assign(this.form, trainer)
+    // console.log(this.form)
+
+    $(window).load(() => {
       console.log(loaded)
+
+      // Set loaded
       for (var k = 0; k < loaded.length; k++) { loaded[k] = false }
+      console.log(loaded)
 
       load_data_batch(0) // async load train set batch 0
       load_data_batch(test_batch) // async load test set
 
       // Autostart ?
       start_fun()
-      toggle_pause() // Start in pause state
+      this.toggle_pause() // Start in pause state
     })
   }
 })

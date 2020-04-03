@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>ConvNetJS MNIST demo</title>
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <link rel="stylesheet" href="style.css">
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <!-- <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet"> -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+</head>
+
+<body>
+  <v-app id="app">
+    <v-container id="wrap">
+      <h2 style="text-align: center;"><a href="http://cs.stanford.edu/people/karpathy/convnetjs/">ConvNetJS</a> MNIST
+        demo
+      </h2>
+
+      <v-expansion-panels v-model="panel" multiple>
+        <v-expansion-panel>
+          <v-expansion-panel-header>Quick start</v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <p>
+              <b>
+                This is a rewrite of the demo from karpathy, original demo can be found <a target="_blank"
+                  href="https://cs.stanford.edu/people/karpathy/convnetjs/demo/mnist.html">here</a>
+              </b>
+            </p>
+            <p>
+              Click on the "Load Pretrained model". And upload an image of a number. This will classify the number.
+            </p>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+
+        <v-expansion-panel>
+          <v-expansion-panel-header>Description</v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <p>
+              This demo trains a Convolutional Neural Network on the <a href="http://yann.lecun.com/exdb/mnist/">MNIST
+                digits
+                dataset</a> in your browser, with nothing but Javascript. The dataset is fairly easy and one should
+              expect to
+              get somewhere around 99% accuracy within few minutes. I used <a href="mnist_parse.zip">this python
+                script</a> to
+              parse the <a href="http://deeplearning.net/tutorial/gettingstarted.html">original files</a> into batches
+              of
+              images
+              that can be easily loaded into page DOM with img tags.
+            </p>
+            <p>
+              This network takes a 28x28 MNIST image and crops a random 24x24 window before training on it (this
+              technique is
+              called data augmentation and improves generalization). Similarly to do prediction, 4 random crops are
+              sampled
+              and
+              the probabilities across all crops are averaged to produce final predictions. The network runs at about
+              5ms for
+              both forward and backward pass on my reasonably decent Ubuntu+Chrome machine.
+            </p>
+            <p>
+              By default, in this demo we're using Adadelta which is one of per-parameter adaptive step size methods, so
+              we
+              don't have to worry about changing learning rates or momentum over time. However, I still included the
+              text
+              fields
+              for changing these if you'd like to play around with SGD+Momentum trainer.
+            </p>
+            <p>Report questions/bugs/suggestions to <a href="https://twitter.com/karpathy">@karpathy</a>.</p>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+
+
+        <v-expansion-panel>
+          <v-expansion-panel-header>Training Stats</v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <v-row>
+              <v-col>
+
+                <v-btn v-if="paused" class="primary" @click="toggle_pause();">
+                  <v-icon>play_arrow</v-icon> continue
+                </v-btn>
+                <v-btn v-else="paused" class="primary" @click="toggle_pause();">
+                  <v-icon>pause</v-icon> pause
+                </v-btn>
+
+                <div id="trainstats"></div>
+
+                <!-- {{form}} -->
+                <v-form class="controls" @submit.prevent="submit(form)">
+                  <!-- Learning rate:  -->
+                  <v-row>
+                    <v-text-field label="Learning rate" step="0.01" style="max-width:270px;" type="number"
+                      v-model="form.lr" name="lri" maxlength="20" id="lr_input"></v-text-field>
+                      <v-text-field label="Learning rate" step="0.01" style="max-width:270px;" type="number"
+                      v-model="form.learning_rate" maxlength="20" id="lr_input"></v-text-field>
+                    <v-btn onclick="change_lr();">change</v-btn>
+                  </v-row>
+
+                  <!-- Momentum:  -->
+                  <v-row>
+                    <v-text-field label="Momentum" style="max-width:270px;" step="0.1" type="number"
+                      v-model="form.momentum" name="momi" maxlength="20" id="momentum_input"></v-text-field>
+                    <v-btn onclick="change_momentum();">change</v-btn>
+                  </v-row>
+
+                  <!-- Batch size:  -->
+                  <v-row>
+                    <v-text-field label="Batch size" style="max-width:270px;" type="number" v-model="form.batch_size"
+                      name="bsi" maxlength="20" id="batch_size_input"></v-text-field>
+                    <v-btn onclick="change_batch_size();">change</v-btn>
+                  </v-row>
+
+                  <v-row>
+                    <v-text-field label="Weight decay" style="max-width:270px;" type="number" v-model="form.decay"
+                      name="wdi" maxlength="20" id="decay_input"></v-text-field>
+                    <v-btn onclick="change_decay();">change</v-btn>
+                  </v-row>
+                <v-btn class="primary" type="submit">Update parameters</v-btn>
+
+                </v-form>
+
+                <v-btn onclick="dump_json();">save network snapshot as JSON</v-btn>
+                <br />
+                <v-btn onclick="load_from_json();">
+                  init network from JSON snapshot
+                </v-btn>
+                <br />
+
+
+                <v-btn @click="loadJsonFromUrl('/demo/mnist/models/1min_training.json');">
+                  Load JSON pretrained model
+                </v-btn>
+                <textarea id="dumpjson"></textarea>
+              </v-col>
+
+              <v-col>
+                <div>
+                  Loss:<br />
+                  <canvas id="lossgraph">
+                  </canvas>
+                  <br />
+                  <v-btn onclick="clear_graph();">clear graph</v-btn>
+                </div>
+              </v-col>
+
+              <v-col>
+                <div id="upload_box">
+                  Test an image from your computer:
+                  <div id="img_div">
+                    <img id="preview_img" />
+                  </div>
+                  <input name="image" type="file" accept="image/*" onchange="loadFile(event)">
+
+                  <v-btn onclick="testImage(document.getElementById('preview_img'))">Test Image</v-btn>
+                </div>
+              </v-col>
+            </v-row>
+
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+
+
+        <v-expansion-panel>
+          <v-expansion-panel-header>Usage</v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <v-col>
+              <div id="upload_box">
+                Test an image from your computer:
+                <div id="img_div">
+                  <img id="preview_img" />
+                </div>
+                <input name="image" type="file" accept="image/*" onchange="loadFile(event)">
+
+                <v-btn onclick="testImage(document.getElementById('preview_img'))">Test Image</v-btn>
+              </div>
+            </v-col>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+
+
+        <v-expansion-panel>
+          <v-expansion-panel-header>Instantiate a Network and Trainer</v-expansion-panel-header>
+          <v-expansion-panel-content>
+
+            <div>
+              <textarea id="newnet" style="width:100%; height:200px;">
+                layer_defs = [];
+                layer_defs.push({type:'input', out_sx:24, out_sy:24, out_depth:1});
+                layer_defs.push({type:'conv', sx:5, filters:8, stride:1, pad:2, activation:'relu'});
+                layer_defs.push({type:'pool', sx:2, stride:2});
+                layer_defs.push({type:'conv', sx:5, filters:16, stride:1, pad:2, activation:'relu'});
+                layer_defs.push({type:'pool', sx:3, stride:3});
+                layer_defs.push({type:'softmax', num_classes:10});
+                
+                net = new convnetjs.Net();
+                net.makeLayers(layer_defs);
+                
+                trainer = new convnetjs.SGDTrainer(net, {method:'adadelta', batch_size:20, l2_decay:0.001});
+              </textarea><br />
+              <v-btn onclick="change_net();">change network</v-btn>
+            </div>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+
+        <v-expansion-panel>
+          <v-expansion-panel-header>Network Visualization</v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <div class="divsec">
+              <div id="visnet"></div>
+            </div>
+
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+
+        <v-expansion-panel>
+          <v-expansion-panel-header>Example predictions on Test set</v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <div class="divsec">
+              <div id="testset_acc"></div>
+              <div id="testset_vis">
+                <template v-for="item in testSet">
+                  <div class="testdiv" style="display: block; overflow: hidden;">
+                    <canvas class="actmap" width="56" height="56"></canvas>
+                    <div class="probsdiv">
+                      <div class="pp" style="width:30px; background-color:rgb(85,187,85);">8</div>
+                      <div class="pp" style="width:13px; background-color:rgb(187,85,85);">3</div>
+                      <div class="pp" style="width:12px; background-color:rgb(187,85,85);">5</div>
+                    </div>
+                  </div>
+                </template>
+
+              </div>
+            </div>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+      </v-expansion-panels>
+
+
+      <!-- <v-snackbar v-model="snackbar">
+        {{ text }}
+        <v-btn color="pink" text @click="snackbar = false">
+          Close
+        </v-btn>
+      </v-snackbar> -->
+      <snackbar />
+
+    </v-container>
+  </v-app>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.js"></script>
+
+
+  <script src="js/jquery-1.8.3.min.js"></script>
+  <script src="../../build/vis.js"></script>
+  <script src="../../build/util.js"></script>
+  <script src="../../build/convnet.js"></script>
+
+  <script src="js/image-helpers.js"></script>
+  <script src="js/pica.js"></script>
+
+  <script src="input/mnist_labels.js"></script>
+  <script type="text/javascript">
+    // ------------------------
+    // BEGIN MNIST SPECIFIC STUFF
+    // ------------------------
+    classes_txt = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    var dataset_name = "mnist";
+    var num_batches = 21; // 20 training batches, 1 test
+    var test_batch = 20;
+    var num_samples_per_batch = 3000;
+    var image_dimension = 28;
+    var image_channels = 1;
+    var use_validation_data = true;
+    var random_flip = false;
+    var random_position = false;
+
+    var layer_defs, net, trainer;
+
+  // ------------------------
+  // END MNIST SPECIFIC STUFF
+  // ------------------------
+  </script>
+  <script type="module" src="app.js"></script>
+
+</body>
+
+</html>
