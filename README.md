@@ -1,7 +1,11 @@
 
-# ConvNetJS
+# ConvNetJS-es6
 
-ConvNetJS is a Javascript implementation of Neural networks, together with nice browser-based demos. It currently supports:
+**Note**: This is a rewrite of ConvNetJS to ES6 and improved demos. Most of the code is based on the work of karpathy ConvNetJs ( https://cs.stanford.edu/people/karpathy/convnetjs/index.html ).
+
+> ConvNetJS is a Javascript library for training Deep Learning models (Neural Networks) entirely in your browser. Open a tab and you're training. No software requirements, no compilers, no installations, no GPUs, no sweat.
+
+It currently supports:
 
 - Common **Neural Network modules** (fully connected layers, non-linearities)
 - Classification (SVM/Softmax) and Regression (L2) **cost functions**
@@ -10,17 +14,15 @@ ConvNetJS is a Javascript implementation of Neural networks, together with nice 
 
 For much more information, see the main page at [convnetjs.com](http://convnetjs.com)
 
-**Note**: I am not actively maintaining ConvNetJS anymore because I simply don't have time. I think the npm repo might not work at this point.
-
 ## Online Demos
 - [Convolutional Neural Network on MNIST digits](demo/imagedetection ":ignore")
-- [Convolutional Neural Network on CIFAR-10](/demo/cifar10.html ":ignore")
-- [Toy 2D data](/demo/classify2d.html ":ignore")
-- [Toy 1D regression](/demo/regression.html ":ignore")
-- [Training an Autoencoder on MNIST digits](/demo/autoencoder.html ":ignore")
-- [Deep Q Learning Reinforcement Learning demo](http://cs.stanford.edu/people/karpathy/convnetjs/demo/rldemo.html ":ignore")
-- [Image Regression ("Painting")](/demo/image_regression.html ":ignore")
-- [Comparison of SGD/Adagrad/Adadelta on MNIST](http://cs.stanford.edu/people/karpathy/convnetjs/demo/trainers.html ":ignore")
+- [Convolutional Neural Network on CIFAR-10](demo/cifar10.html ":ignore")
+- [Toy 2D data](demo/classify2d.html ":ignore")
+- [Toy 1D regression](demo/regression.html ":ignore")
+- [Training an Autoencoder on MNIST digits](demo/autoencoder.html ":ignore")
+- [Deep Q Learning Reinforcement Learning demo](demo/rldemo.html ":ignore")
+- [Image Regression ("Painting")](demo/image_regression.html ":ignore")
+- [Comparison of SGD/Adagrad/Adadelta on MNIST](demo/trainers.html ":ignore")
 
 ## Example Code
 
