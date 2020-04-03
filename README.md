@@ -13,7 +13,7 @@ For much more information, see the main page at [convnetjs.com](http://convnetjs
 **Note**: I am not actively maintaining ConvNetJS anymore because I simply don't have time. I think the npm repo might not work at this point.
 
 ## Online Demos
-- [Convolutional Neural Network on MNIST digits](/demo/mnist.html ":ignore")
+- [Convolutional Neural Network on MNIST digits](demo/imagedetection ":ignore")
 - [Convolutional Neural Network on CIFAR-10](/demo/cifar10.html ":ignore")
 - [Toy 2D data](/demo/classify2d.html ":ignore")
 - [Toy 1D regression](/demo/regression.html ":ignore")
